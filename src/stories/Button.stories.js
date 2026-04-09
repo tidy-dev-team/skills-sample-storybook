@@ -1,49 +1,94 @@
-import { fn } from 'storybook/test';
-
+import React from 'react';
+import { fn, userEvent, within } from 'storybook/test';
 import { Button } from './Button';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
+/** @type {import('@storybook/react').Meta<typeof Button>} */
 export default {
-  title: 'Example/Button',
+  title: 'Components/Button',
   component: Button,
-  parameters: {
-    // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
-    layout: 'centered',
-  },
-  // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ['autodocs'],
-  // More on argTypes: https://storybook.js.org/docs/api/argtypes
+  parameters: { layout: 'centered' },
   argTypes: {
-    backgroundColor: { control: 'color' },
+    variant: {
+      control: 'select',
+      options: ['crazy', 'outline', 'ghost'],
+      description: 'crazy = contained/neon  |  outline = border only  |  ghost = text only',
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+      description: 'sm=32px  md=40px  lg=48px',
+    },
+    disabled: { control: 'boolean' },
+    children: { control: 'text' },
+    onClick: { table: { disable: true } },
   },
-  // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#story-args
-  args: { onClick: fn() },
+  args: { onClick: fn(), children: 'Button' },
 };
 
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Primary = {
-  args: {
-    primary: true,
-    label: 'Button',
+/** Contained button with neon-green fill and glow animation. */
+export const Crazy = {
+  args: { variant: 'crazy', size: 'md' },
+};
+
+/** Outlined button — transparent background, green border. */
+export const Outline = {
+  args: { variant: 'outline', size: 'md' },
+};
+
+/** Ghost button — text only, no visible border. */
+export const Ghost = {
+  args: { variant: 'ghost', size: 'md' },
+};
+
+/** Small — 32px height. */
+export const SizeSm = {
+  name: 'Size / Small',
+  args: { variant: 'crazy', size: 'sm' },
+};
+
+/** Large — 48px height. */
+export const SizeLg = {
+  name: 'Size / Large',
+  args: { variant: 'crazy', size: 'lg' },
+};
+
+/** 50% opacity, pointer-events disabled. */
+export const Disabled = {
+  args: { variant: 'crazy', disabled: true },
+};
+
+/** Hover — cyan #1AC6FF glitch state. */
+export const Hovered = {
+  args: { variant: 'crazy' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.hover(canvas.getByRole('button'));
   },
 };
 
-export const Secondary = {
-  args: {
-    label: 'Button',
+/** Focus — green glow ring via :focus-visible. */
+export const Focused = {
+  args: { variant: 'crazy' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    canvas.getByRole('button').focus();
   },
 };
 
-export const Large = {
-  args: {
-    size: 'large',
-    label: 'Button',
-  },
-};
-
-export const Small = {
-  args: {
-    size: 'small',
-    label: 'Button',
-  },
+/** All variant × size combinations. */
+export const AllVariants = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 24 }}>
+      {['crazy', 'outline', 'ghost'].map(variant => (
+        <div key={variant} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {['sm', 'md', 'lg'].map(size => (
+            <Button key={size} variant={variant} size={size}>
+              {variant} / {size}
+            </Button>
+          ))}
+        </div>
+      ))}
+    </div>
+  ),
 };
